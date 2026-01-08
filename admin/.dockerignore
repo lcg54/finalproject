@@ -1,0 +1,6 @@
+adminvenv/
+__pycache__/
+staticfiles/
+*.pyc
+.git
+.env

@@ -1,0 +1,99 @@
+version: "3.9"
+
+networks:
+  spring-mysql-net:
+
+volumes:
+  mysql-vol:
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    command:
+      - --character-set-server=utf8mb4
+      - --character-set-results=utf8mb4
+      - --character-set-connection=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql-vol:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - spring-mysql-net
+
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: always
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: linux
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - spring-mysql-net
+
+  admin:
+    build: ./admin
+    container_name: admin
+    restart: always
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - spring-mysql-net
+
+  fe1:
+    build: ./frontend
+    container_name: fe1
+    networks:
+      - spring-mysql-net
+
+  fe2:
+    build: ./frontend
+    container_name: fe2
+    networks:
+      - spring-mysql-net
+
+  fe3:
+    build: ./frontend
+    container_name: fe3
+    networks:
+      - spring-mysql-net
+
+  gateway:
+    build: ./loadbalancer
+    container_name: gateway
+    ports:
+      - "8888:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - fe1
+      - fe2
+      - fe3
+      - backend
+    networks:
+      - spring-mysql-net
