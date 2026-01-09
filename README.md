@@ -29,20 +29,19 @@
 
 ### 1. Development Environment
 
-Client
-↓
-Nginx (gateway :8888)
-├─ `/`      → React (fe1, fe2, fe3)
-├─ `/api`   → Spring Boot (B2C / Sales Domain)
-└─ `/admin` → Django (ERP / Admin Domain, Gunicorn WSGI)
-↓
+Client 
+↓ 
+Nginx (gateway :8888) 
+├─ `/`      → React (fe1, fe2, fe3) 
+├─ `/api`   → Spring Boot (B2C / Sales Domain) 
+└─ `/admin` → Django (ERP / Admin Domain, Gunicorn WSGI) 
+↓ 
 MySQL
 
 - Frontend는 다중 컨테이너(fe1~fe3)로 구성하여 **Scale-out 구조**를 구현
 - Nginx는 시스템의 단일 진입점으로 동작하며, Frontend에 대한 Load Balancing과 API/관리자 서비스에 대한 Reverse Proxy를 수행
 - Spring Boot와 Django로 **트래픽 특성과 트랜잭션 성격이 다른 도메인을 분리**하여 책임을 명확화
 - Django Admin의 역할과 운영 환경 전환을 고려하여 개발용 서버(runserver)가 아닌 WSGI 서버(gunicorn)를 사용
-
 
 ### 2. Production Environment
 
@@ -67,19 +66,19 @@ AWS RDS (MySQL)
 
 ## Directory Structure
 
-finalproject/
+finalproject/ 
 ├─ frontend/                 # React Application
 ├─ backend/                  # Spring Boot API Server (B2C / Sales)
 ├─ admin/                    # Django Project (ERP / Admin)
 ├─ loadbalancer/             # Nginx Reverse Proxy / Load Balancer
-├─ mysql/
+├─ mysql/ 
 │ └─ init/                   # DB & User initialization script
 ├─ terraform/                # AWS Infra construction
-├─ .env.development.example
-├─ .env.production.example
-├─ docker-compose.yml
-├─ docs/
-└─ README.md
+├─ .env.development.example 
+├─ .env.production.example 
+├─ docker-compose.yml 
+├─ docs/ 
+└─ README.md 
 
 ---
 
@@ -100,7 +99,6 @@ finalproject/
   - 관리자 전용 서비스로 외부 사용자 노출 없음
   - 관리자는 ‘사용자’가 아닌 ‘업무 주체’로 가정하여 UI보다 데이터 정확성을 우선
 
-
 ### 2. InventoryLog as Single Source of Truth
 
 - 재고 수량을 별도 컬럼으로 관리하지 않음
@@ -108,13 +106,11 @@ finalproject/
 - 재고는 누적 로그 기반으로 계산 가능
 - 수정/삭제 불가 정책으로 **과거 상태 추적 및 감사(Audit) 가능**
 
-
 ### 3. Database & Account Separation
 
 - Spring Boot / Django 간 DB 계정 분리
 - 최소 권한 원칙 적용
 - 장애 및 보안 이슈 발생 시 영향 범위 최소화
-
 
 ### 4. Development & Production Environment Control
 
@@ -127,15 +123,17 @@ finalproject/
 
 ## How to Run
 
-### Development Level
+### 1. Development Level
 
 로컬 개발 환경 실행 방법은 아래 문서를 참고하세요.
+
 - [Local Setup Guide](docs/LOCAL_SETUP.md)
 
-### Production Level
+### 2. Production Level
 
 운영 환경에서는 AWS 리소스(RDS, ALB 등)가 사전에 구성되어 있어야 하며,  
 아래 명령은 EC2 환경에서 실행하는 것을 가정합니다.
+
 ```bash
 cp .env.production.example .env
 docker-compose up -d --build
