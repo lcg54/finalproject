@@ -33,9 +33,9 @@
 Client
 ↓
 Nginx (gateway :8888)
-├─ `/`      → React (fe1, fe2, fe3)
-├─ `/api`   → Spring Boot (B2C / Sales Domain)
-└─ `/admin` → Django (ERP / Admin Domain, Gunicorn WSGI)
+├─ /      → React (fe1, fe2, fe3)
+├─ /api   → Spring Boot (B2C / Sales Domain)
+└─ /admin → Django (ERP / Admin Domain, Gunicorn WSGI)
 ↓
 MySQL
 ```
@@ -53,9 +53,9 @@ Client (your-domain.shop)
 AWS ALB (HTTPS :443)
 ↓
 Nginx (EC2, Internal Gateway)
-├─ `/`      → React
-├─ `/api`   → Spring Boot
-└─ `/admin` → Django
+├─ /      → React
+├─ /api   → Spring Boot
+└─ /admin → Django
 ↓
 AWS RDS (MySQL)
 ```
@@ -129,21 +129,11 @@ finalproject/
 
 ## How to Run
 
-### 1. Development Environment
+본 프로젝트는 로컬 개발 환경과 운영 환경을 분리하여 실행할 수 있도록 구성되어 있습니다.  
+환경에 따라 아래 가이드를 참고하여 실행하세요.
 
-로컬 개발 환경 실행 방법은 아래 문서를 참고하세요.
-
-- [Initial Setup Guide](docs/INITIAL_SETUP.md)
-
-### 2. Production Environment
-
-운영 환경에서는 AWS 인프라(EC2, RDS, ALB 등)를 Terraform으로 구성하며,  
-아래 명령은 Terraform으로 프로비저닝된 EC2 인스턴스에서 실행하세요.
-
-```bash
-cp .env.production.example .env
-docker compose up -d --build
-```
+- [로컬 개발 환경 실행 방법](docs/LOCAL_SETUP.md)
+- [운영 환경 배포 방법](docs/PRODUCTION_SETUP.md)
 
 ---
 
@@ -171,7 +161,6 @@ docker compose up -d --build
 ## API Documentation
 
 - [API 명세서](docs/SwaggerUI.yaml)
-
 - 관리자 기능은 Django Admin 기반으로 제공
 
 ---
