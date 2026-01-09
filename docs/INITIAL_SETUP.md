@@ -1,4 +1,6 @@
-# 1. Install Docker & Docker Compose
+# Initial Setup on Ubuntu Server (SSH)
+
+## 1. Install Docker & Docker Compose
 
 ```bash
 sudo apt update
@@ -18,10 +20,11 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 sudo usermod -aG docker ubuntu
 exit
 ```
-→ SSH 재접속 (docker 권한 적용)
+- Restart the session to apply Docker privileges.
 
+---
 
-# 2. Prepare App to Run
+## 2. Prepare App to Run
 
 ```bash
 git clone https://github.com/lcg54/finalproject.git
@@ -29,28 +32,34 @@ cd finalproject
 cp .env.development.example .env
 vi .env
 ```
-→ MySQL 비밀번호 & Django 시크릿키 수정
+- Set your MySQL password and Django secret key.
 
+---
 
-# 3. Run (About 5 to 10 minutes)
+## 3. Build & Run (About 5 minutes)
 
 ```bash
 docker compose up -d --build
 ```
+---
 
-# 4. Create Admin Account (Local)
+## 4. Create Django Admin Account (via Docker)
 
 ```bash
 docker compose exec admin python manage.py createsuperuser
 ```
+---
 
-# 5. Connection Port
+## 5. Connection Port
 
-- Frontend      : http://localhost:8888
-- Django Admin  : http://localhost:8888/admin
+- Frontend      : http://<server-ip>:8888
+- Django Admin  : http://<server-ip>:8888/admin
 
+※ If Docker and browser are running on the same machine, `localhost` can be used instead of `<server-ip>`.
 
-# 6. Stop / Restart
+---
+
+## 6. Stop / Restart
 
 ```bash
 docker compose down     # stop containers

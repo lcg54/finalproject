@@ -10,7 +10,7 @@
 - **재고 상태를 직접 저장하지 않으며, 모든 재고 변화를 이벤트 로그로만 기록**하여 데이터 정합성과 추적 가능성을 우선시한 ERP 구조 구현
 - 트랜잭션 밀도와 책임 범위에 따라 **B2C 판매 도메인과 B2B/관리자 업무 도메인을 분리**하여 구성
 - Docker compose를 통해 **개발 환경의 구조적 일관성 및 운영 환경으로의 전환 용이성**을 고려
-- Terraform을 통해 네트워크, EC2, ALB, RDS 리소스를 코드로 관리하여 **인프라 변경 이력을 추적 가능**하도록 구성
+- Terraform을 통해 네트워크, EC2, ALB, RDS 리소스를 코드로 관리하여 **인프라 변경 이력을 코드 단위로 추적 가능**하도록 구성
 
 ---
 
@@ -29,14 +29,16 @@
 
 ### 1. Development Environment
 
-Client 
-↓ 
-Nginx (gateway :8888) 
-├─ `/`      → React (fe1, fe2, fe3) 
-├─ `/api`   → Spring Boot (B2C / Sales Domain) 
-└─ `/admin` → Django (ERP / Admin Domain, Gunicorn WSGI) 
-↓ 
+```text
+Client
+↓
+Nginx (gateway :8888)
+├─ `/`      → React (fe1, fe2, fe3)
+├─ `/api`   → Spring Boot (B2C / Sales Domain)
+└─ `/admin` → Django (ERP / Admin Domain, Gunicorn WSGI)
+↓
 MySQL
+```
 
 - Frontend는 다중 컨테이너(fe1~fe3)로 구성하여 **Scale-out 구조**를 구현
 - Nginx는 시스템의 단일 진입점으로 동작하며, Frontend에 대한 Load Balancing과 API/관리자 서비스에 대한 Reverse Proxy를 수행
@@ -45,6 +47,7 @@ MySQL
 
 ### 2. Production Environment
 
+```text
 Client (your-domain.shop)
 ↓
 AWS ALB (HTTPS :443)
@@ -55,6 +58,7 @@ Nginx (EC2, Internal Gateway)
 └─ `/admin` → Django
 ↓
 AWS RDS (MySQL)
+```
 
 - AWS ALB가 외부 트래픽의 Load Balancing 및 HTTPS 종료를 담당
 - Nginx는 이후로 내부 Gateway로서 Reverse Proxy 역할만 수행
@@ -66,19 +70,21 @@ AWS RDS (MySQL)
 
 ## Directory Structure
 
-finalproject/ 
-├─ frontend/                 # React Application
-├─ backend/                  # Spring Boot API Server (B2C / Sales)
-├─ admin/                    # Django Project (ERP / Admin)
-├─ loadbalancer/             # Nginx Reverse Proxy / Load Balancer
-├─ mysql/ 
-│ └─ init/                   # DB & User initialization script
-├─ terraform/                # AWS Infra construction
-├─ .env.development.example 
-├─ .env.production.example 
-├─ docker-compose.yml 
-├─ docs/ 
-└─ README.md 
+```text
+finalproject/
+├─ frontend/                # React Application
+├─ backend/                 # Spring Boot API Server (B2C / Sales)
+├─ admin/                   # Django Project (ERP / Admin)
+├─ loadbalancer/            # Nginx Reverse Proxy / Load Balancer
+├─ mysql/
+│ └─ init/                  # DB & User initialization script
+├─ terraform/               # AWS Infra construction
+├─ .env.development.example
+├─ .env.production.example
+├─ docker-compose.yml
+├─ docs/
+└─ README.md
+```
 
 ---
 
@@ -123,20 +129,20 @@ finalproject/
 
 ## How to Run
 
-### 1. Development Level
+### 1. Development Environment
 
 로컬 개발 환경 실행 방법은 아래 문서를 참고하세요.
 
-- [Local Setup Guide](docs/LOCAL_SETUP.md)
+- [Initial Setup Guide](docs/INITIAL_SETUP.md)
 
-### 2. Production Level
+### 2. Production Environment
 
-운영 환경에서는 AWS 리소스(RDS, ALB 등)가 사전에 구성되어 있어야 하며,  
-아래 명령은 EC2 환경에서 실행하는 것을 가정합니다.
+운영 환경에서는 AWS 인프라(EC2, RDS, ALB 등)를 Terraform으로 구성하며,  
+아래 명령은 Terraform으로 프로비저닝된 EC2 인스턴스에서 실행하세요.
 
 ```bash
 cp .env.production.example .env
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ---
@@ -164,9 +170,8 @@ docker-compose up -d --build
 
 ## API Documentation
 
-- API 명세는 Spring Boot 기반 Swagger(OpenAPI)로 제공
-- 주요 엔드포인트 구현 완료 후 자동 생성 예정
-<!-- - [API 명세서](docs/SwaggerUI.yaml) -->
+- [API 명세서](docs/SwaggerUI.yaml)
+
 - 관리자 기능은 Django Admin 기반으로 제공
 
 ---
