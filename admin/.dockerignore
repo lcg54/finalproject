@@ -1,4 +1,3 @@
-adminvenv/
 __pycache__/
 staticfiles/
 *.pyc

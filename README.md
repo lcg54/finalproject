@@ -9,7 +9,7 @@
 
 - **재고 상태를 직접 저장하지 않으며, 모든 재고 변화를 이벤트 로그로만 기록**하여 데이터 정합성과 추적 가능성을 우선시한 ERP 구조 구현
 - 트랜잭션 밀도와 책임 범위에 따라 **B2C 판매 도메인과 B2B/관리자 업무 도메인을 분리**하여 구성
-- Docker compose를 통해 **개발 환경의 구조적 일관성 및 운영 환경으로의 전환 용이성**을 고려
+- Docker compose를 통해 **개발 환경의 구조적 일관성** 및 **운영 환경으로의 전환 용이성**을 고려
 - Terraform을 통해 네트워크, EC2, ALB, RDS 리소스를 코드로 관리하여 **인프라 변경 이력을 코드 단위로 추적 가능**하도록 구성
 
 ---
@@ -32,18 +32,18 @@
 ```text
 Client
 ↓
-Nginx (gateway :8888)
-├─ /      → React (fe1, fe2, fe3)
-├─ /api   → Spring Boot (B2C / Sales Domain)
-└─ /admin → Django (ERP / Admin Domain, Gunicorn WSGI)
+Nginx (Gateway :8888)
+├─ /        → React (Static Files)
+├─ /api     → Spring Boot (B2C / Sales Domain)
+└─ /admin   → Django (ERP / Admin Domain, Gunicorn WSGI)
 ↓
 MySQL
 ```
 
-- Frontend는 다중 컨테이너(fe1~fe3)로 구성하여 **Scale-out 구조**를 구현
-- Nginx는 시스템의 단일 진입점으로 동작하며, Frontend에 대한 Load Balancing과 API/관리자 서비스에 대한 Reverse Proxy를 수행
-- Spring Boot와 Django로 **트래픽 특성과 트랜잭션 성격이 다른 도메인을 분리**하여 책임을 명확화
-- Django Admin의 역할과 운영 환경 전환을 고려하여 개발용 서버(runserver)가 아닌 WSGI 서버(gunicorn)를 사용
+- Nginx는 시스템의 단일 진입점으로 동작하며, 정적 리소스 서빙과 API/관리자 서비스에 대한 Reverse Proxy를 담당
+- Spring Boot와 Django로 **트래픽 특성과 책임이 다른 도메인을 분리**하여 독립적인 서비스로 구성
+- Django Admin은 역할과 운영 환경 전환을 고려하여 개발용 서버(runserver)가 아닌 **WSGI 서버(gunicorn) 기반**으로 실행
+- 모든 서비스는 Docker 기반으로 구성되며, 환경 변수(`.env`)를 통해 설정 관리
 
 ### 2. Production Environment
 
@@ -52,19 +52,19 @@ Client (your-domain.shop)
 ↓
 AWS ALB (HTTPS :443)
 ↓
-Nginx (EC2, Internal Gateway)
-├─ /      → React
-├─ /api   → Spring Boot
-└─ /admin → Django
+Nginx (EC2, Gateway)
+├─ /        → React (Static Files)
+├─ /api     → Spring Boot
+└─ /admin   → Django
 ↓
 AWS RDS (MySQL)
 ```
 
-- AWS ALB가 외부 트래픽의 Load Balancing 및 HTTPS 종료를 담당
-- Nginx는 이후로 내부 Gateway로서 Reverse Proxy 역할만 수행
-- Backend 서비스는 Private Network 내에서만 접근 가능
-- Docker 환경 변수 구조를 그대로 유지하여 **운영 환경 전환 용이**
-- Terraform 기반 **인프라 일관성** 확보
+- AWS ALB가 외부 트래픽에 대한 Load Balancing 및 HTTPS 종료를 담당
+- Backend(Spring Boot, Django)는 Private Network 내에서만 접근 가능
+- Docker 환경 변수 구조를 그대로 유지하여 **개발·운영 환경 간 전환 용이**
+- Terraform 기반 인프라 관리로 **환경 간 일관성 확보**
+- Nginx 및 Application Container는 EC2 상에서 Docker로 실행
 
 ---
 
@@ -72,16 +72,18 @@ AWS RDS (MySQL)
 
 ```text
 finalproject/
-├─ frontend/                # React Application
-├─ backend/                 # Spring Boot API Server (B2C / Sales)
+├─ frontend/                # React Application (Build Output → Nginx Static Files)
+├─ backend/                 # Spring Boot API Server (B2C / Sales Domain)
 ├─ admin/                   # Django Project (ERP / Admin)
-├─ loadbalancer/            # Nginx Reverse Proxy / Load Balancer
 ├─ mysql/
 │ └─ init/                  # DB & User initialization script
-├─ terraform/               # AWS Infra construction
+├─ terraform/               # AWS Infrastructure as Code
+├─ nginx/
+│ └─ default.conf           # Nginx Gateway Configuration
+├─ Dockerfile               # Nginx Gateway Dockerfile
+├─ docker-compose.yml
 ├─ .env.development.example
 ├─ .env.production.example
-├─ docker-compose.yml
 ├─ docs/
 └─ README.md
 ```
