@@ -11,13 +11,18 @@
 
 ### 2. Clone & Configure
 
-```bash
+```text
 git clone https://github.com/lcg54/finalproject.git
 cd finalproject\frontend
 npm install
 npm run build
 cd ..
+
+# Linux / macOS
 cp .env.development.example .env
+
+# Windows
+copy .env.development.example .env
 ```
 
 - `.env`에서 다음 변수를 실제 값으로 설정하세요. (`.env`는 보안상 Git에 커밋되지 않습니다.)
