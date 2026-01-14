@@ -12,6 +12,8 @@
 - JWT 기반 인증과 Redis를 활용한 세션/토큰 관리로 **상태 관리 책임을 명확히 분리**
 - Docker Compose와 Terraform을 활용하여 **개발 환경과 운영 환경 간 구조적 일관성 및 전환 용이성 확보**
 
+---
+
 ## For Contributors (Team Onboarding)
 
 이 프로젝트는 도메인 분리, 인증 방식, 재고 관리 규칙 등 구조적으로 반드시 지켜야 할 설계 원칙을 포함하고 있습니다.
@@ -22,6 +24,8 @@
 
 이 문서는 각 서비스의 책임 범위와 개발 시 반드시 지켜야 할 규칙을 요약합니다.
 
+---
+
 ## Tech Stack
 
 - Frontend: *React*
@@ -31,6 +35,8 @@
 - Cache / Session Store: *Redis*
 - Containerization: *Docker / Docker Compose*
 - Cloud Provider: *AWS (EC2, ALB, RDS, ElastiCache) / Terraform*
+
+---
 
 ## Architecture
 
@@ -55,8 +61,6 @@ MySQL
 - Django Admin은 개발 서버(runserver)가 아닌 **Gunicorn 기반 WSGI 서버**로 실행
 - 모든 서비스는 Docker 기반으로 구성되며, 환경 변수(`.env`)를 통해 설정 관리
 
----
-
 ### Production Environment
 
 ```text
@@ -79,6 +83,8 @@ AWS RDS (MySQL)
 - Docker 환경 변수 구조를 그대로 유지하여 **개발·운영 환경 간 전환을 환경 변수 교체만으로 처리**
 - Redis, MySQL, ALB 등 모든 외부 인프라는 Terraform으로 관리하여 **환경 간 일관성 확보**
 
+---
+
 ## Directory Structure
 
 ```text
@@ -99,6 +105,8 @@ finalproject/
 └─ README.md
 ```
 
+---
+
 ## Design Decisions
 
 ### Domain-Based Backend Separation
@@ -115,15 +123,11 @@ finalproject/
   - Django Admin을 활용하여 빠르게 관리 UI 구성
   - 외부 사용자 노출 없는 관리자 전용 서비스
 
----
-
 ### InventoryLog as Single Source of Truth
 
 - 재고 수량을 별도 컬럼으로 관리하지 않음
 - 모든 재고 변화는 InventoryLog 단일 테이블에 이벤트 단위로 기록
 - 수정/삭제 불가 정책으로 **과거 상태 추적 및 감사(Audit) 가능**
-
----
 
 ### Authentication & Session Strategy
 
@@ -133,13 +137,13 @@ finalproject/
   - 토큰 수명 및 재발급 정책 중앙 관리
 - Django Admin은 기존 Session 인증을 유지하되, 세션 저장소를 Redis로 분리하여 DB 부하 최소화
 
----
-
-### 4. Development & Production Environment Control
+### Development & Production Environment Control
 
 - Docker Compose 기반의 통일된 개발 환경 구성
 - 설정은 환경 변수로만 관리하여 개발/운영 환경 전환 시 코드 수정 없음
 - Terraform을 통해 AWS 인프라를 코드로 관리하여 환경 간 일관성 확보
+
+---
 
 ## How to Run
 
@@ -148,6 +152,8 @@ finalproject/
 
 - [로컬 개발 환경 실행 방법](docs/LOCAL_SETUP.md)
 - [운영 환경 배포 방법](docs/PRODUCTION_SETUP.md)
+
+---
 
 ## Application Features
 
@@ -159,8 +165,6 @@ finalproject/
 - 결제 처리
 - 출고 요청 및 상태 관리
 
----
-
 ### Admin (Django)
 
 - 상품 / 거래처 / 창고 관리
@@ -169,6 +173,8 @@ finalproject/
 - 재고 조정 / 반품 / 폐기
 - 재고 이동 이력(InventoryLog) 조회
 - 매출 집계 데이터 조회 (Spring 계산 결과)
+
+---
 
 ## Documentation
 
@@ -182,6 +188,8 @@ finalproject/
 - [ERD 이미지](docs/ERD.png)
 - [ERD 상세 설명](docs/ERD.md)
 
+---
+
 ## Future Improvements
 
 - 재고 이벤트 기반 비동기 처리 구조 도입 (Outbound, Return 등)
@@ -189,6 +197,8 @@ finalproject/
 - CI/CD 파이프라인 구축 (GitHub Actions, Jenkins)
 - 모니터링 도구(Prometheus, Grafana) 도입 
 - ECS(Fargate) 전환
+
+---
 
 ## Summary
 

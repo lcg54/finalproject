@@ -9,8 +9,6 @@
 - Linux
   - Docker Engine & Docker Compose Plugin 설치 : https://docs.docker.com/engine/install/
 
----
-
 ### 2. Clone & Configure
 
 ```bash
@@ -31,8 +29,6 @@ cp .env.development.example .env
 - Windows hosts 파일에 다음 항목을 추가하세요. (관리자 권한)
   - 127.0.0.1 admin.localhost
 
----
-
 ### 3. Build & Run
 
 ```bash
@@ -48,25 +44,23 @@ docker compose exec admin python manage.py createsuperuser
   - 이메일
   - 비밀번호
 
----
-
 ### 4. Stop
 
 ```bash
 docker compose down
 ```
 
+---
+
 ## After the First Run
 
-### 1. Run
+### Run
 
 ```bash
 docker compose up -d
 ```
 
----
-
-### 2. Update Database Schema
+### Update Database Schema
 
 ```bash
 docker compose exec admin python manage.py makemigrations
@@ -75,15 +69,15 @@ docker compose exec admin python manage.py migrate
 
 - Django model을 추가/수정/제거한 경우 수행하세요.
 
----
-
-### 3. Stop & Reset DB
+### Stop & Reset DB
 
 ```bash
 docker compose down -v
 ```
 
 - 이후 **3. Build & Run**을 다시 수행하세요.
+
+---
 
 ## Connection Port
 

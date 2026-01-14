@@ -2,10 +2,14 @@
 
 *ERP Management System*
 
+---
+
 ## 1. Project Goal (왜 이 구조인가)
 
 - 본 프로젝트는 중소 유통업체의 주문–출고–재고–정산 흐름을 안정적으로 관리하는 ERP 시스템을 목표로 합니다.
 - 소비자 트래픽과 관리자 업무를 분리하여 트랜잭션 특성과 장애 영향 범위를 명확히 나누는 구조로 설계되었습니다.
+
+---
 
 ## 2. Service Responsibility (가장 중요)
 
@@ -20,8 +24,6 @@
   - API 기반 서비스
 - **관리자용 기능 구현 금지**
 
----
-
 ### Django (ERP / Admin Domain)
 
 - 내부 관리자 전용 서비스
@@ -32,6 +34,8 @@
   - Django Admin 중심
   - 외부 사용자 직접 접근 없음
 - **소비자 트래픽 처리 금지**
+
+---
 
 ## 3. Authentication & State Management
 
@@ -47,6 +51,8 @@
   - Django Session Store
 - 비즈니스 데이터 저장 용도로 사용하지 않음
 
+---
+
 ## 4. Inventory Design Rule (절대 규칙)
 
 - 재고 수량을 직접 저장하지 않음
@@ -55,12 +61,16 @@
 
 → 재고 수량이 필요하면 **“현재 재고 = InventoryLog 누적 결과”** 로 계산
 
+---
+
 ## 5. Environment & Configuration
 
 - 모든 서비스는 Docker 기반으로 실행
 - 개발/운영 환경 차이는 **인프라 위치뿐**
 - 설정 변경은 `.env` 교체로만 처리
 - 애플리케이션 코드는 환경(Local / AWS)을 인지하지 않음
+
+---
 
 ## 6. What You Should / Should Not Do
 
