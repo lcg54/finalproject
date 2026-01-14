@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 import os
 
 # -------------------------------------------------------------------
@@ -49,6 +50,48 @@ CSRF_TRUSTED_ORIGINS = get_env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 
 # -------------------------------------------------------------------
+# Cache / Session
+# -------------------------------------------------------------------
+
+password = os.getenv("REDIS_PASSWORD", "")
+auth = f":{password}@" if password else ""
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{auth}{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/{os.getenv('REDIS_DB_DJANGO', 1)}",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+SESSION_ENGINE = os.getenv(
+    "DJANGO_SESSION_ENGINE",
+    "django.contrib.sessions.backends.cache"
+)
+SESSION_CACHE_ALIAS = "default"
+SESSION_COOKIE_AGE = 60 * 60 * 2  # 2 hours
+SESSION_SAVE_EVERY_REQUEST = False
+
+
+# -------------------------------------------------------------------
+# JWT
+# -------------------------------------------------------------------
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(seconds=int(os.getenv("DJANGO_JWT_ACCESS_TTL"))),
+    "REFRESH_TOKEN_LIFETIME": timedelta(seconds=int(os.getenv("DJANGO_JWT_REFRESH_TTL"))),
+    "SIGNING_KEY": os.getenv("DJANGO_JWT_SECRET"),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+SIMPLE_JWT.update({
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ROTATE_REFRESH_TOKENS": True,
+})
+
+
+# -------------------------------------------------------------------
 # Reverse Proxy (Nginx / ALB)
 # -------------------------------------------------------------------
 
@@ -68,6 +111,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # custom apps
+]
+INSTALLED_APPS += [
+    'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 

@@ -1,5 +1,5 @@
 networks:
-  spring-mysql-net:
+  internal-net:
 
 volumes:
   mysql-vol:
@@ -26,7 +26,21 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - spring-mysql-net
+      - internal-net
+  
+  redis:
+    image: redis:7-alpine
+    command:
+      - redis-server
+      - --appendonly no
+      - --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal-net
 
   backend:
     build: ./backend
@@ -40,10 +54,10 @@ services:
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
+      - redis
     networks:
-      - spring-mysql-net
+      - internal-net
 
   admin:
     build: ./admin
@@ -56,10 +70,10 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
+      - redis
     networks:
-      - spring-mysql-net
+      - internal-net
 
   gateway:
     image: nginx:alpine
@@ -82,4 +96,4 @@ services:
       - backend
       - admin
     networks:
-      - spring-mysql-net
+      - internal-net
