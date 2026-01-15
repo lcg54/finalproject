@@ -1,8 +1,8 @@
 # ERD Configuration
 
-본 문서는 **중소 프랜차이즈 키오스크 기반 ERP 시스템**의 데이터 모델을 정의한다.
+본 문서는 **중소 프랜차이즈 키오스크 기반 ERP 시스템**의 데이터 모델을 정의합니다.
 
-본 시스템의 핵심 설계 원칙은 다음과 같다.
+본 시스템의 핵심 설계 원칙은 다음과 같습니다.
 
 - 주문·결제·출고 등 트랜잭션 중심 도메인과 관리자(ERP) 도메인의 분리
 - 재고 수량을 직접 저장하지 않고, 모든 재고 변화는 `InventoryLog`를 통해 기록
@@ -14,12 +14,12 @@
 ## 1. Master Data
 
 ### Organization
-본사(HQ) 및 지점(FRANCHISE)을 통합 표현하는 엔티티
+본사(HQ) 및 지점(Store)을 통합 표현하는 엔티티
 
 | Field | Type | Description |
 |---|---|---|
 | id | PK | 조직 ID |
-| type | ENUM(HQ, FRANCHISE) | 조직 유형 |
+| type | ENUM(HQ, Store) | 조직 유형 |
 | name | VARCHAR | 조직명 |
 | status | ENUM(ACTIVE, INACTIVE) | 운영 상태 |
 | created_at | DATETIME | 생성 시각 |
@@ -33,7 +33,7 @@
 | Field | Type | Description |
 |---|---|---|
 | id | PK | 키오스크 ID |
-| franchise_id | FK → Organization.id | 소속 지점 |
+| store_id | FK → Organization.id | 소속 지점 |
 | identifier | VARCHAR | 단말 식별자 |
 | status | ENUM(ACTIVE, INACTIVE) | 사용 상태 |
 | last_seen_at | DATETIME | 마지막 접속 시각 |
@@ -47,6 +47,7 @@
 | id | PK | 상품 ID |
 | sku | VARCHAR | 상품 코드 |
 | name | VARCHAR | 상품명 |
+| category | ENUM | 카테고리 |
 | description | VARCHAR | 상품 설명 |
 | image | VARCHAR | 상품 이미지 |
 | price | DECIMAL | 소비자 판매가 |
@@ -63,7 +64,7 @@
 | id | PK | 창고 ID |
 | organization_id | FK → Organization.id | 소속 조직 |
 | name | VARCHAR | 창고명 |
-| type | ENUM(HQ, FRANCHISE) | 창고 유형 |
+| type | ENUM(HQ, Store) | 창고 유형 |
 
 ---
 
@@ -78,7 +79,7 @@
 
 ---
 
-## 2. Franchise Operations
+## 2. Store Operations
 
 ### Order
 소비자 주문
@@ -87,7 +88,7 @@
 |---|---|---|
 | id | PK | 주문 ID |
 | kiosk_id | FK → Kiosk.id | 주문 발생 단말 |
-| franchise_id | FK → Organization.id | 지점 |
+| store_id | FK → Organization.id | 지점 |
 | status | ENUM(CREATED, PAID, CANCELED) | 주문 상태 |
 | ordered_at | DATETIME | 주문 시각 |
 
@@ -105,7 +106,7 @@
 
 ---
 
-### Outbound (Franchise)
+### Outbound (Store)
 소비자 출고 처리
 
 | Field | Type | Description |
@@ -113,7 +114,7 @@
 | id | PK | 출고 ID |
 | order_id | FK → Order.id | 주문 |
 | warehouse_id | FK → Warehouse.id | 출고 창고 |
-| status | ENUM(READY, SHIPPED, COMPLETED) | 출고 상태 |
+| status | ENUM(READY, COMPLETED) | 출고 상태 |
 | outbound_at | DATETIME | 출고 시각 |
 
 ---
@@ -124,7 +125,7 @@
 | Field | Type | Description |
 |---|---|---|
 | id | PK | 요청 ID |
-| franchise_id | FK → Organization.id | 요청 지점 |
+| store_id | FK → Organization.id | 요청 지점 |
 | status | ENUM(REQUESTED, APPROVED, REJECTED, FULFILLED, CLOSED) | 처리 상태 |
 | requested_at | DATETIME | 요청 시각 |
 | decided_at | DATETIME | 승인/반려 시각 |
@@ -148,7 +149,7 @@
 | Field | Type | Description |
 |---|---|---|
 | id | PK | 처리 ID |
-| franchise_id | FK → Organization.id | 지점 |
+| store_id | FK → Organization.id | 지점 |
 | product_id | FK → Product.id | 상품 |
 | quantity | INT | 수량 |
 | reason | VARCHAR | 사유 |
