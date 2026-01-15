@@ -1,39 +1,42 @@
 # Project Onboarding Summary
 
-*ERP Management System*
+*ERP Management System for Franchise-based Kiosk Operations*
 
 ---
 
 ## 1. Project Goal (왜 이 구조인가)
 
-- 본 프로젝트는 중소 유통업체의 주문–출고–재고–정산 흐름을 안정적으로 관리하는 ERP 시스템을 목표로 합니다.
-- 소비자 트래픽과 관리자 업무를 분리하여 트랜잭션 특성과 장애 영향 범위를 명확히 나누는 구조로 설계되었습니다.
+- 본 프로젝트는 **중소 프랜차이즈 본사의 주문–출고–재고–정산 흐름을 통합 관리하는 ERP 시스템**을 목표로 합니다.
+- 매장 내 키오스크에서 발생하는 주문 트래픽과 본사 운영(ERP) 업무를 분리하여,
+  트랜잭션 특성과 장애 영향 범위를 명확히 나누는 구조로 설계되었습니다.
 
 ---
 
 ## 2. Service Responsibility (가장 중요)
 
-### Spring Boot (B2C / Sales Domain)
+### Spring Boot (Kiosk / Order Domain)
 
-- 소비자 대상 API 전용
+- 키오스크 주문 트래픽 처리 전용 API
 - 담당 영역
-  - 주문, 결제, 출고 요청
-  - 외부 결제 시스템 연동
+  - 주문 생성
+  - 결제 처리
+  - 출고 요청
 - 특징
   - 고트래픽·동시성 고려
-  - API 기반 서비스
-- **관리자용 기능 구현 금지**
+  - API 중심의 트랜잭션 처리 서비스
+- **관리자(ERP) 기능 구현 금지**
 
 ### Django (ERP / Admin Domain)
 
-- 내부 관리자 전용 서비스
+- 본사 관리자 전용 서비스
 - 담당 영역
+  - 가맹점(키오스크) 관리
   - 발주, 입고, 재고, 거래처 관리
   - 재고 이력(InventoryLog) 관리
 - 특징
-  - Django Admin 중심
+  - Django Admin 중심의 관리 UI
   - 외부 사용자 직접 접근 없음
-- **소비자 트래픽 처리 금지**
+- **주문 트래픽 처리 금지**
 
 ---
 
@@ -46,8 +49,8 @@
 
 ### Redis 사용 규칙
 
-- Redis는 **상태 저장 전용 인프라**
-  - Refresh Token 저장
+- Redis는 **상태 관리 전용 인프라**
+  - JWT Refresh Token 저장
   - Django Session Store
 - 비즈니스 데이터 저장 용도로 사용하지 않음
 
@@ -59,7 +62,8 @@
 - 모든 재고 변화는 **InventoryLog 이벤트로만 기록**
 - 로그는 수정/삭제 불가
 
-→ 재고 수량이 필요하면 **“현재 재고 = InventoryLog 누적 결과”** 로 계산
+→ 재고 수량이 필요하면  
+→ **“현재 재고 = InventoryLog 누적 결과”** 로 계산
 
 ---
 
@@ -82,7 +86,7 @@
 
 ### You Should NOT
 
-- Spring에 관리자 기능 추가
-- Django에서 소비자 API 구현
+- Spring에 ERP(관리자) 기능 추가
+- Django에서 주문 트래픽 처리 로직 구현
 - 재고 수량 컬럼 추가
 - 서버 메모리에 상태 저장

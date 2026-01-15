@@ -1,15 +1,15 @@
-# ERP Management System for Distributors
+# ERP Management System for Small Franchise Businesses
 
 ## Overview
 
-본 프로젝트는 **중소 유통업체의 주문·재고·발주·출고·정산 흐름을 통합 관리하는 ERP 시스템**을 구현한 웹 애플리케이션입니다.  
-단순 기능 구현을 넘어, 실무 환경을 가정한 **서비스 분리, 인증 구조, 인프라 전환 가능성**을 고려한 풀스택 아키텍처 설계 및 구현에 중점을 두었습니다.
+본 프로젝트는 **중소 프랜차이즈 업체의 주문·재고·발주·출고·정산 흐름을 통합 관리하는 ERP 시스템**을 구현한 웹 애플리케이션입니다. 
+단순 기능 구현을 넘어, 실무 환경을 가정한 **도메인 분리, 인증 책임 분리, 인프라 전환 가능성**을 고려한 풀스택 아키텍처 설계에 중점을 두었습니다.
 
 특히 본 프로젝트는 다음과 같은 설계 원칙을 중심으로 구성되었습니다.
 
 - **재고 상태를 직접 저장하지 않으며, 모든 재고 변화를 이벤트 로그로만 기록**하여 데이터 정합성과 추적 가능성을 우선시한 ERP 구조 구현
-- 트랜잭션 밀도와 책임 범위에 따라 **B2C 판매 도메인과 B2B/관리자 업무 도메인을 분리**
-- JWT 기반 인증과 Redis를 활용한 세션/토큰 관리로 **상태 관리 책임을 명확히 분리**
+- 트랜잭션 밀도와 책임 범위에 따라 **키오스크 주문 도메인과 관리자(ERP) 업무 도메인을 분리**
+- JWT 및 Redis를 활용하여 **인증 및 상태 관리 책임을 애플리케이션 외부로 분리**
 - Docker Compose와 Terraform을 활용하여 **개발 환경과 운영 환경 간 구조적 일관성 및 전환 용이성 확보**
 
 ---
@@ -30,7 +30,7 @@
 
 - Frontend: *React*
 - Backend: *Spring Boot / Django*
-- Reverse Proxy / Load Balancer: *Nginx*
+- Reverse Proxy: *Nginx*
 - Database: *MySQL*
 - Cache / Session Store: *Redis*
 - Containerization: *Docker / Docker Compose*
@@ -40,26 +40,36 @@
 
 ## Architecture
 
+### Common Architecture Principles
+
+- Nginx는 시스템의 단일 진입점(Single Entry Point)으로 동작하며,
+  정적 리소스 서빙과 API/관리자 서비스에 대한 Reverse Proxy 역할을 수행
+- Redis는 인증 및 세션 관련 상태를 중앙에서 관리하여,
+  애플리케이션 레이어의 Stateless 구성을 유지
+- 모든 서비스는 Docker 기반으로 구성되며,
+  설정은 환경 변수(`.env`)로만 관리하여 코드 수정 없이 환경 전환 가능
+- 백엔드 서비스(Spring Boot, Django)는
+  트래픽 특성과 책임 범위에 따라 독립적으로 배포 및 확장 가능하도록 구성
+
 ### Development Environment
 
 ```text
-Client
+Kiosk
 ↓
 Nginx (Gateway :8888)
-├─ localhost/        → React (Static Files)
-├─ localhost/api     → Spring Boot (B2C / Sales Domain)
-└─ admin.localhost   → Django (ERP / Admin Domain, Gunicorn WSGI)
+├─ /                → React (Kiosk UI)
+├─ /api             → Spring Boot
+└─ admin.localhost  → Django (Gunicorn WSGI)
 ↓
 Redis
 ↓
 MySQL
 ```
 
-- Nginx는 시스템의 단일 진입점으로 동작하며, 정적 리소스 서빙과 API/관리자 서비스에 대한 Reverse Proxy를 담당
-- Spring Boot와 Django를 **도메인 및 트래픽 특성에 따라 분리**
-- Redis는 JWT Refresh Token 관리 (Spring / Django API) 및 Django Admin Session Store 수행
-- Django Admin은 개발 서버(runserver)가 아닌 **Gunicorn 기반 WSGI 서버**로 실행
-- 모든 서비스는 Docker 기반으로 구성되며, 환경 변수(`.env`)를 통해 설정 관리
+- Docker Compose 기반의 로컬 개발 환경으로, 모든 서비스는 단일 호스트에서 실행
+- 도메인 및 포트 분리를 통해 운영 환경과 최대한 유사한 접근 경로 유지
+- Django Admin은 개발 서버(runserver)가 아닌 Gunicorn WSGI 기반으로 실행하여 운영 환경과의 실행 차이를 최소화
+- 초기 개발 및 테스트를 위한 DB 초기화 스크립트 제공 (mysql/init)
 
 ### Production Environment
 
@@ -78,10 +88,11 @@ AWS ElastiCache (Redis)
 AWS RDS (MySQL)
 ```
 
-- AWS ALB가 HTTPS 종료 및 외부 트래픽 분산 처리
-- Backend(Spring Boot, Django)는 Private Network 내에서만 접근 가능
-- Docker 환경 변수 구조를 그대로 유지하여 **개발·운영 환경 간 전환을 환경 변수 교체만으로 처리**
-- Redis, MySQL, ALB 등 모든 외부 인프라는 Terraform으로 관리하여 **환경 간 일관성 확보**
+- AWS ALB를 통해 HTTPS 종료 및 외부 트래픽 분산 처리
+- Backend(Spring Boot, Django)는 Private Network 내에서만 접근 가능하도록 구성
+- 상태 저장이 필요한 인프라(Redis, MySQL)는 관리형 서비스(RDS, ElastiCache)로 분리
+- 개발 환경과 동일한 컨테이너 구조 및 환경 변수 체계를 유지하여 환경 간 전환 시 애플리케이션 코드 수정 없이 배포 가능
+- 모든 인프라는 Terraform으로 관리하여 재현 가능성과 환경 간 일관성 확보
 
 ---
 
@@ -90,7 +101,7 @@ AWS RDS (MySQL)
 ```text
 finalproject/
 ├─ frontend/                # React Application (Build Output → Nginx Static Files)
-├─ backend/                 # Spring Boot API Server (B2C / Sales Domain)
+├─ backend/                 # Spring Boot API Server (Kiosk / Order Domain)
 ├─ admin/                   # Django Project (ERP / Admin Domain)
 ├─ mysql/
 │ └─ init/                  # DB & User initialization script (only for local)
@@ -114,12 +125,13 @@ finalproject/
 - Spring Boot와 Django는 독립적인 서비스로 배포되어, 특정 도메인 장애가 전체 시스템으로 전파되지 않도록 구성
 
 - Spring Boot
-  - 주문, 결제, 출고 등 소비자 중심 도메인
+  - 키오스크 주문, 결제, 출고 등 **트랜잭션 중심 도메인**
   - 고트래픽·고동시성 처리 고려
+  - 단말 단위 요청을 전제로 한 인증 및 트랜잭션 처리 구조
   - 외부 결제 시스템 연동 및 실패/재시도를 고려한 트랜잭션 경계 설정
 
 - Django
-  - 발주, 입고, 재고, 거래처 관리 등 관리자 중심 도메인
+  - 발주, 입고, 재고, 거래처 관리 등 **관리자 중심 도메인**
   - Django Admin을 활용하여 빠르게 관리 UI 구성
   - 외부 사용자 노출 없는 관리자 전용 서비스
 
@@ -157,10 +169,9 @@ finalproject/
 
 ## Application Features
 
-### Consumer (Spring Boot)
+### Kiosk (Spring Boot)
 
-- 회원 가입 / 로그인
-- JWT 기반 인증
+- 키오스크 단말 등록 및 운영 관리
 - 주문 생성
 - 결제 처리
 - 출고 요청 및 상태 관리
@@ -205,7 +216,8 @@ finalproject/
 본 프로젝트는 재고를 단일 진실 소스로 설계하고, 
 모든 재고 변화를 이벤트 로그로만 관리하는 ERP 시스템입니다.
 
-주문·결제·출고와 같은 고트래픽 트랜잭션과 발주·입고·재고 관리와 같은 관리자 업무를 분리하여, 
+주문·결제·출고와 같은 트랜잭션 처리는 키오스크 단말을 중심으로 처리되며, 
+발주·입고·재고 관리와 같은 운영 업무는 관리자(ERP) 도메인으로 분리하여 
 각 도메인이 자신의 책임과 트랜잭션 특성에 집중할 수 있도록 설계하였습니다.
 
 JWT와 Redis를 활용하여 인증과 상태 관리 책임을 분리하고, 
