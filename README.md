@@ -27,13 +27,15 @@
 
 ## Tech Stack
 
-- Frontend: *React*
-- Backend: *Spring Boot / Django*
-- Reverse Proxy: *Nginx*
-- Database: *MySQL*
-- Cache / Session Store: *Redis*
-- Containerization: *Docker / Docker Compose*
-- Cloud Provider: *AWS (EC2, ALB, RDS, ElastiCache) / Terraform*
+| Category              | Technology                                   |
+|-----------------------|-----------------------------------------------|
+| Frontend              | React                                         |
+| Backend               | Spring Boot / Django                          |
+| Reverse Proxy         | Nginx                                         |
+| Database              | MySQL                                         |
+| Cache / Session Store | Redis                                         |
+| Containerization      | Docker / Docker Compose                       |
+| Cloud Provider        | AWS (EC2, ALB, RDS, ElastiCache) / Terraform  |
 
 ---
 
