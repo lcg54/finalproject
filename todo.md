@@ -4,13 +4,12 @@
 ---
 
 ## ERP (우선)
+- 관리자 및 직원 계정 관리는 Django 기본 인증 모델을 사용
+  - auth_user
+  - auth_group
+  - auth_permission
+- 소속: Django User를 확장 (OneToOne)
 - 본사/지점 권한에 따라 기능 분리
-  - 관리자 및 직원 계정 관리는 Django 기본 인증 모델을 사용
-    - auth_user
-    - auth_group
-    - auth_permission
-  - 소속: Django User를 확장 (OneToOne)
-  
   - 공통
     - 상품 조회
     - 재고 및 재고 이동 이력(InventoryLog) 조회
